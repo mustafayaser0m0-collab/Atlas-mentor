@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Atlas Mentor</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Atlas Mentor"/>
+<meta name="theme-color" content="#1D9E75"/>
+<meta name="description" content="AI tutor for radiologic technology students"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --brand:#1D9E75;--brand-dark:#0F6E56;--brand-light:#E1F5EE;--brand-mid:#9FE1CB;
+  --bg:#fff;--bg2:#f6f6f4;--bg3:#ececea;
+  --tx:#1a1a1a;--tx2:#555;--tx3:#999;
+  --bd:rgba(0,0,0,0.09);--bd2:rgba(0,0,0,0.16);
+  --r:8px;--rl:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+  --tx:#f2f2f7;--tx2:#aeaeb2;--tx3:#636366;
+  --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.16);
+}}
+html[dir="rtl"]{font-family:'Segoe UI','Tahoma',system-ui,sans-serif;}
+html[dir="ltr"]{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+body{background:var(--bg);color:var(--tx);min-height:100vh;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--brand);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.4s;}
+#splash svg{width:64px;height:64px;fill:white;margin-bottom:16px;}
+#splash h1{color:white;font-size:24px;font-weight:600;letter-spacing:-0.5px;}
+#splash p{color:rgba(255,255,255,0.75);font-size:14px;margin-top:6px;}
+.splash-bar{width:160px;height:3px;background:rgba(255,255,255,0.3);border-radius:2px;margin-top:32px;overflow:hidden;}
+.splash-fill{height:100%;background:white;border-radius:2px;animation:sfill 1.8s ease-in-out forwards;}
+@keyframes sfill{from{width:0}to{width:100%}}
+
+/* APP */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:0.5px solid var(--bd);background:var(--bg);flex-shrink:0;}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-mark svg{width:19px;height:19px;fill:white;}
+.brand-name{font-size:15px;font-weight:600;color:var(--tx);letter-spacing:-0.3px;}
+.brand-sub{font-size:10px;color:var(--tx2);}
+.topbar-r{margin-inline-start:auto;display:flex;align-items:center;gap:8px;}
+.lang-toggle{display:flex;border:0.5px solid var(--bd2);border-radius:20px;overflow:hidden;}
+.lbtn{padding:4px 11px;font-size:11px;cursor:pointer;background:var(--bg);color:var(--tx2);border:none;font-weight:500;}
+.lbtn.on{background:var(--brand);color:white;}
+.streak-chip{background:var(--brand-light);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:#085041;display:flex;align-items:center;gap:4px;cursor:pointer;}
+.streak-chip svg{width:12px;height:12px;fill:#085041;}
+
+/* LAYOUT */
+.body-wrap{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:186px;border-inline-end:0.5px solid var(--bd);padding:8px 6px;display:flex;flex-direction:column;gap:1px;background:var(--bg);flex-shrink:0;overflow-y:auto;}
+.nsec{font-size:9px;color:var(--tx3);padding:10px 10px 3px;letter-spacing:0.5px;text-transform:uppercase;}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background 0.1s;}
+.ni:hover{background:var(--bg2);}
+.ni.on{background:var(--brand-light);}
+.ni svg{width:14px;height:14px;fill:var(--tx2);flex-shrink:0;}
+.ni.on svg{fill:#085041;}
+.ni span{font-size:12px;color:var(--tx2);}
+.ni.on span{color:#085041;font-weight:500;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* PANELS */
+.panel{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.panel.on{display:flex;}
+.ph{padding:12px 16px 9px;border-bottom:0.5px solid var(--bd);flex-shrink:0;}
+.ph-title{font-size:14px;font-weight:500;color:var(--tx);}
+.ph-sub{font-size:11px;color:var(--tx2);margin-top:1px;}
+
+/* CHAT */
+.chips{display:flex;gap:5px;padding:8px 14px;flex-wrap:wrap;border-bottom:0.5px solid var(--bd);flex-shrink:0;}
+.chip{padding:4px 10px;border-radius:20px;border:0.5px solid var(--bd2);background:var(--bg);color:var(--tx2);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.chip:hover{background:var(--brand-light);border-color:var(--brand-mid);color:#085041;}
+.msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
+.msg{display:flex;gap:8px;align-items:flex-start;}
+.msg.u{flex-direction:row-reverse;}
+.av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;}
+.bav{background:var(--brand);color:white;}
+.uav{background:#B5D4F4;color:#0C447C;}
+.bub{max-width:76%;padding:8px 11px;border-radius:var(--rl);font-size:13px;line-height:1.65;color:var(--tx);background:var(--bg2);border:0.5px solid var(--bd);}
+.msg.u .bub{background:var(--brand-light);border-color:var(--brand-mid);color:#085041;}
+.ibar{padding:9px 14px;border-top:0.5px solid var(--bd);display:flex;gap:7px;align-items:center;flex-shrink:0;}
+.ibar input{flex:1;padding:8px 13px;border:0.5px solid var(--bd2);border-radius:20px;background:var(--bg);color:var(--tx);font-size:13px;outline:none;}
+.ibar input:focus{border-color:var(--brand);}
+.sbtn{width:32px;height:32px;border-radius:50%;background:var(--brand);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sbtn:hover{background:var(--brand-dark);}
+.sbtn svg{width:14px;height:14px;fill:white;}
+.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--tx3);margin:0 2px;animation:dl 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dl{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* SECTIONS */
+.ssec{flex:1;overflow-y:auto;padding:13px 14px;}
+.card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);padding:12px 14px;margin-bottom:10px;}
+.ct{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:8px;}
+.bdg{display:inline-block;padding:2px 8px;border-radius:var(--r);font-size:10px;font-weight:500;}
+.bw{background:#FAEEDA;color:#633806;}
+.bg{background:var(--brand-light);color:#085041;}
+.br{background:#FCEBEB;color:#791F1F;}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.ic{background:var(--bg2);border-radius:var(--r);padding:7px 9px;}
+.il{font-size:9px;color:var(--tx2);margin-bottom:1px;}
+.iv{font-size:12px;font-weight:500;color:var(--tx);}
+
+/* XRAY */
+.xwrap{background:#0a0a0a;border-radius:var(--r);padding:8px;margin-bottom:10px;text-align:center;border:1px solid #222;}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.cb{padding:8px 9px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg2);color:var(--tx);font-size:11px;cursor:pointer;text-align:start;line-height:1.4;transition:all .12s;}
+.cb:hover{border-color:var(--brand);background:var(--brand-light);}
+.cb.ok{background:var(--brand-light);border-color:var(--brand);color:#085041;}
+.cb.err{background:#FCEBEB;border-color:#E24B4A;color:#501313;}
+.rbox{padding:8px 12px;border-radius:var(--r);font-size:11px;line-height:1.5;margin-top:8px;}
+.rok{background:var(--brand-light);color:#085041;border:0.5px solid var(--brand-mid);}
+.rerr{background:#FCEBEB;color:#501313;border:0.5px solid #F7C1C1;}
+
+/* DOSE */
+.sr{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.sl{font-size:11px;color:var(--tx2);width:36px;flex-shrink:0;}
+.sr input[type=range]{flex:1;}
+.sv{font-size:12px;font-weight:500;color:var(--tx);min-width:36px;text-align:end;}
+.dg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px;}
+.dm{background:var(--bg2);border-radius:var(--r);padding:8px;}
+.dml{font-size:9px;color:var(--tx2);margin-bottom:2px;}
+.dmv{font-size:13px;font-weight:500;color:var(--tx);}
+.btrack{height:5px;background:var(--bd);border-radius:3px;overflow:hidden;}
+.bfill{height:100%;border-radius:3px;transition:width .3s,background .3s;}
+
+/* PROGRESS */
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.sc{background:var(--bg2);border-radius:var(--r);padding:12px;}
+.scl{font-size:10px;color:var(--tx2);margin-bottom:3px;}
+.scv{font-size:22px;font-weight:600;color:var(--tx);}
+
+/* STREAK MODAL */
+.smodal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:800;display:flex;align-items:center;justify-content:center;}
+.smodal{background:var(--bg);border-radius:var(--rl);padding:24px;max-width:300px;width:90%;text-align:center;border:0.5px solid var(--bd2);}
+.smodal-icon{font-size:48px;margin-bottom:10px;}
+.smodal h2{font-size:18px;font-weight:600;color:var(--tx);margin-bottom:6px;}
+.smodal p{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:16px;}
+.smodal-btn{padding:9px 24px;background:var(--brand);color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;width:100%;}
+
+/* GEN LOADING */
+.gen-loading{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--bg2);border-radius:var(--rl);border:0.5px solid var(--bd);margin-bottom:10px;}
+.gen-loading svg{width:16px;height:16px;fill:var(--brand);animation:spin 1s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-loading span{font-size:12px;color:var(--tx2);}
+
+/* NEXT BTN */
+.nbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg2);color:var(--tx2);font-size:11px;cursor:pointer;margin-top:8px;}
+.nbtn:hover{background:var(--brand-light);color:#085041;border-color:var(--brand-mid);}
+.nbtn:disabled{opacity:0.5;cursor:wait;}
+
+/* MOBILE NAV */
+.mob-nav{display:none;border-top:0.5px solid var(--bd);background:var(--bg);flex-shrink:0;}
+.mn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;cursor:pointer;border-top:2px solid transparent;}
+.mn.on{border-top-color:var(--brand);}
+.mn svg{width:18px;height:18px;fill:var(--tx2);}
+.mn.on svg{fill:var(--brand);}
+.mn span{font-size:9px;color:var(--tx2);}
+.mn.on span{color:var(--brand);font-weight:500;}
+
+/* INSTALL BANNER */
+#installBanner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;background:var(--bg);border-top:0.5px solid var(--bd2);padding:10px 14px;align-items:center;gap:10px;}
+#installBanner .iblogo{width:32px;height:32px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#installBanner .iblogo svg{width:18px;height:18px;fill:white;}
+#installBanner .ibtxt{flex:1;}
+#installBanner .ibtxt div:first-child{font-size:12px;font-weight:500;color:var(--tx);}
+#installBanner .ibtxt div:last-child{font-size:10px;color:var(--tx2);}
+#installBtn{padding:6px 13px;background:var(--brand);color:white;border:none;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;}
+#installClose{padding:5px 7px;background:none;border:none;cursor:pointer;color:var(--tx2);font-size:18px;line-height:1;}
+
+@media(max-width:560px){
+  .sidebar{display:none;}
+  .mob-nav{display:flex;}
+  .brand-sub{display:none;}
+  .topbar{padding:9px 12px;}
+  .ssec,.msgs{padding:10px;}
+  .chips{padding:7px 10px;}
+  .ibar{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  <h1>Atlas Mentor</h1>
+  <p id="splashSub">Loading your AI tutor...</p>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<!-- STREAK MODAL -->
+<div class="smodal-bg" id="streakModal" style="display:none;">
+  <div class="smodal">
+    <div class="smodal-icon">🔥</div>
+    <h2 id="smTitle">Streak!</h2>
+    <p id="smBody">Keep it up!</p>
+    <button class="smodal-btn" onclick="document.getElementById('streakModal').style.display='none'" id="smBtn">Continue</button>
+  </div>
+</div>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">Atlas Mentor</div>
+      <div class="brand-sub" id="brandSub">Radiologic technology AI tutor</div>
+    </div>
+    <div class="topbar-r">
+      <div class="lang-toggle">
+        <button class="lbtn on" id="btnEN" onclick="setLang('en')">EN</button>
+        <button class="lbtn" id="btnAR" onclick="setLang('ar')">AR</button>
+      </div>
+      <div class="streak-chip" onclick="document.getElementById('streakModal').style.display='flex'" title="Your streak">
+        <svg viewBox="0 0 24 24"><path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.28L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.94-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.28 2.28C7.81 18 6 15.21 6 12c0-4.08 3.05-7.44 7-7.93V2.05z"/></svg>
+        <span id="streakTxt">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="body-wrap">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="nsec" id="ns1">Learn</div>
+      <div class="ni on" onclick="goTab('chat',this)">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        <span data-k="nav_chat">AI tutor chat</span>
+      </div>
+      <div class="ni" onclick="goTab('patient',this)">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        <span data-k="nav_patient">Virtual patient</span>
+      </div>
+      <div class="ni" onclick="goTab('detective',this)">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <span data-k="nav_detective">X-ray detective</span>
+      </div>
+      <div class="ni" onclick="goTab('dose',this)">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        <span data-k="nav_dose">Dose optimizer</span>
+      </div>
+      <div class="nsec" id="ns2">Progress</div>
+      <div class="ni" onclick="goTab('progress',this)">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+        <span data-k="nav_progress">My progress</span>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- CHAT -->
+      <div id="p-chat" class="panel on">
+        <div class="ph">
+          <div class="ph-title" data-k="nav_chat">AI tutor chat</div>
+          <div class="ph-sub" data-k="chat_sub">Ask anything about radiologic technology</div>
+        </div>
+        <div class="chips" id="chipsRow"></div>
+        <div class="msgs" id="chatMsgs"></div>
+        <div class="ibar">
+          <input id="chatIn" data-kp="chat_ph" onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="sbtn" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+        </div>
+      </div>
+
+      <!-- PATIENT -->
+      <div id="p-patient" class="panel">
+        <div class="ph">
+          <div class="ph-title" data-k="nav_patient">Virtual patient</div>
+          <div class="ph-sub" data-k="patient_sub">Describe your positioning approach</div>
+        </div>
+        <div class="ssec">
+          <div id="patientCard" class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:5px;margin-bottom:8px;">
+              <div class="ct" style="margin:0;" id="pExam">—</div>
+              <div class="bdg bw" id="pCond">—</div>
+            </div>
+            <div class="igrid" id="pGrid"></div>
+            <div style="font-size:11px;color:var(--tx2);" id="pChallenge"></div>
+          </div>
+          <div id="pMsgs" style="display:flex;flex-direction:column;gap:8px;margin-bottom:9px;"></div>
+          <div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;">
+            <input id="patIn" data-kp="patient_ph" onkeydown="if(event.key==='Enter')sendPatient()" style="flex:1;padding:8px 13px;border:0.5px solid var(--bd2);border-radius:20px;background:var(--bg);color:var(--tx);font-size:12px;outline:none;"/>
+            <button class="sbtn" onclick="sendPatient()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+          </div>
+          <button class="nbtn" id="nextPatBtn" onclick="genPatient()"><span data-k="next_patient">New patient</span> →</button>
+        </div>
+      </div>
+
+      <!-- DETECTIVE -->
+      <div id="p-detective" class="panel">
+        <div class="ph">
+          <div class="ph-title" data-k="nav_detective">X-ray detective</div>
+          <div class="ph-sub"><span data-k="score_lbl">Score:</span> <span id="scoreNum" style="color:var(--brand);font-weight:600;">0</span> / <span id="totalNum">0</span></div>
+        </div>
+        <div class="ssec">
+          <div class="card">
+            <div class="ct" id="dTitle">—</div>
+            <div class="xwrap"><svg id="xraySvg" viewBox="0 0 320 220" style="max-width:320px;width:100%;display:block;margin:0 auto;"></svg></div>
+            <div style="font-size:11px;color:var(--tx2);margin-bottom:9px;padding:6px 8px;background:var(--bg2);border-radius:var(--r);" id="dHint"></div>
+            <div class="cgrid" id="dChoices"></div>
+            <div id="dResult"></div>
+            <button class="nbtn" id="nextCaseBtn" onclick="genCase()"><span data-k="next_case">Next case</span> →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOSE -->
+      <div id="p-dose" class="panel">
+        <div class="ph">
+          <div class="ph-title" data-k="nav_dose">Dose optimizer</div>
+          <div class="ph-sub" data-k="dose_sub">Adjust factors and predict image quality</div>
+        </div>
+        <div class="ssec">
+          <div class="card">
+            <div class="ct" data-k="exp_factors">Exposure factors</div>
+            <div class="sr"><span class="sl">kVp</span><input type="range" min="50" max="130" value="80" step="1" id="kvp" oninput="calcDose()"/><span class="sv" id="kvpV">80</span></div>
+            <div class="sr"><span class="sl">mAs</span><input type="range" min="1" max="100" value="20" step="1" id="mas" oninput="calcDose()"/><span class="sv" id="masV">20</span></div>
+            <div class="dg" id="doseMetrics"></div>
+            <div style="font-size:10px;color:var(--tx2);margin-bottom:3px;" data-k="dose_level_lbl">Patient dose level</div>
+            <div class="btrack"><div class="bfill" id="doseBar"></div></div>
+            <div style="font-size:10px;color:var(--tx2);margin-top:3px;" id="doseTxt"></div>
+          </div>
+          <div id="doseMsgs" style="display:flex;flex-direction:column;gap:8px;margin-bottom:9px;"></div>
+          <div style="display:flex;gap:7px;align-items:center;">
+            <input id="doseIn" data-kp="dose_ph" onkeydown="if(event.key==='Enter')sendDose()" style="flex:1;padding:8px 13px;border:0.5px solid var(--bd2);border-radius:20px;background:var(--bg);color:var(--tx);font-size:12px;outline:none;"/>
+            <button class="sbtn" onclick="sendDose()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div id="p-progress" class="panel">
+        <div class="ph">
+          <div class="ph-title" data-k="nav_progress">My progress</div>
+          <div class="ph-sub" data-k="progress_sub">Track your learning</div>
+        </div>
+        <div class="ssec">
+          <div class="sgrid">
+            <div class="sc"><div class="scl" data-k="stat_q">Questions</div><div class="scv" id="stQ">0</div></div>
+            <div class="sc"><div class="scl" data-k="stat_acc">Accuracy</div><div class="scv" id="stAcc">—</div></div>
+            <div class="sc"><div class="scl" data-k="stat_p">Patients</div><div class="scv" id="stP">0</div></div>
+            <div class="sc"><div class="scl" data-k="stat_streak">Streak</div><div class="scv" style="color:var(--brand);" id="stStreak">0</div></div>
+          </div>
+          <div class="card"><div class="ct" data-k="mod_complete">Module completion</div><div id="progBars"></div></div>
+          <div class="card" style="margin-top:0;">
+            <div class="ct" data-k="topics_review">Topics to review</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;">
+              <span class="bdg bw" data-k="topic1">Radiographic positioning</span>
+              <span class="bdg bw" data-k="topic2">Radiologic physics</span>
+              <span class="bdg bg" data-k="topic3">Radiation protection</span>
+              <span class="bdg bg" data-k="topic4">Patient care</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div class="mob-nav">
+    <div class="mn on" onclick="goTabM('chat',this)"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span data-k="nav_chat">Chat</span></div>
+    <div class="mn" onclick="goTabM('patient',this)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg><span data-k="nav_patient">Patient</span></div>
+    <div class="mn" onclick="goTabM('detective',this)"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span data-k="nav_detective">Detective</span></div>
+    <div class="mn" onclick="goTabM('dose',this)"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg><span data-k="nav_dose">Dose</span></div>
+    <div class="mn" onclick="goTabM('progress',this)"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg><span data-k="nav_progress">Progress</span></div>
+  </div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="installBanner">
+  <div class="iblogo"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+  <div class="ibtxt"><div id="ibTitle">Install Atlas Mentor</div><div id="ibSub">Add to home screen</div></div>
+  <button id="installBtn">Install</button>
+  <button id="installClose" onclick="document.getElementById('installBanner').style.display='none'">×</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════════════════════
+const T={
+en:{
+  nav_chat:"AI tutor chat",nav_patient:"Virtual patient",nav_detective:"X-ray detective",
+  nav_dose:"Dose optimizer",nav_progress:"My progress",
+  chat_sub:"Ask anything about radiologic technology",
+  patient_sub:"Describe your positioning approach",
+  dose_sub:"Adjust factors and predict image quality",
+  progress_sub:"Track your learning",
+  exp_factors:"Exposure factors",dose_level_lbl:"Patient dose level",
+  score_lbl:"Score:",next_patient:"New patient",next_case:"Next case",
+  stat_q:"Questions",stat_acc:"Accuracy",stat_p:"Patients",stat_streak:"Streak",
+  mod_complete:"Module completion",topics_review:"Topics to review",
+  topic1:"Radiographic positioning",topic2:"Radiologic physics",
+  topic3:"Radiation protection",topic4:"Patient care",
+  brand_sub:"Radiologic technology AI tutor",learn:"Learn",progress:"Progress",
+  chat_ph:"Ask about positioning, physics, anatomy...",
+  patient_ph:"Describe your positioning approach...",
+  dose_ph:"Ask about these exposure factors...",
+  welcome:"Welcome to Atlas Mentor! Ask me anything about radiographic positioning, anatomy, radiation physics, or patient care.",
+  chips:["ALARA","kVp & contrast","PA chest","mAs & density","Photon interactions","CT vs MRI","Radiographic anatomy","Patient dose"],
+  chip_qs:["Explain ALARA principle","How does kVp affect image contrast?","PA chest X-ray positioning steps","How does mAs affect image density?","Explain photoelectric effect and Compton scatter","Differences between CT, MRI and X-ray?","How to identify organs in a chest X-ray?","How to minimize patient radiation dose?"],
+  low_dose:"safe",mod_dose:"acceptable",high_dose:"reduce factors",
+  contrast:"Contrast",density:"Density",est_dose:"Dose",
+  high:"High",medium:"Medium",low:"Low",under:"Under",optimal:"Optimal",over:"Over",
+  ok_pfx:"Correct! ",err_pfx:"Not quite. ",hint_pfx:"Hint: ",
+  gen_patient:"Generating patient case...",gen_case:"Generating X-ray case...",
+  streak_new:"🔥 Day {n} Streak!",streak_body:"You've studied {n} day(s) in a row. Keep it up!",
+  streak_lost:"Streak reset",streak_lost_body:"Your streak was reset. Start a new one today!",
+  streak_btn:"Continue learning",streak_first:"Welcome back!",streak_first_body:"Your learning journey starts today.",
+  you:"You",
+  sys:`You are Atlas Mentor, an expert AI tutor for radiologic technology students. Respond in English. Specialize in radiographic positioning, anatomy, radiation physics, radiation protection (ALARA), CT, MRI, nuclear medicine, and patient care. Be concise, educational, and encouraging. Keep replies under 140 words unless more detail is truly needed.`
+},
+ar:{
+  nav_chat:"محادثة المعلم",nav_patient:"المريض الافتراضي",nav_detective:"المحقق الشعاعي",
+  nav_dose:"محسّن الجرعة",nav_progress:"تقدمي",
+  chat_sub:"اسأل أي شيء عن تقنيات الأشعة",
+  patient_sub:"صف أسلوبك في الوضعية",
+  dose_sub:"اضبط العوامل وتوقع جودة الصورة",
+  progress_sub:"تتبع تقدمك",
+  exp_factors:"عوامل التعريض",dose_level_lbl:"مستوى جرعة المريض",
+  score_lbl:"النتيجة:",next_patient:"مريض جديد",next_case:"حالة جديدة",
+  stat_q:"الأسئلة",stat_acc:"الدقة",stat_p:"المرضى",stat_streak:"السلسلة",
+  mod_complete:"إتمام الوحدات",topics_review:"مواضيع للمراجعة",
+  topic1:"وضعيات التصوير",topic2:"فيزياء الأشعة",
+  topic3:"الوقاية من الإشعاع",topic4:"رعاية المريض",
+  brand_sub:"معلم ذكاء اصطناعي لتقنيات الأشعة",learn:"التعلم",progress:"التقدم",
+  chat_ph:"اسأل عن الوضعيات أو الفيزياء أو التشريح...",
+  patient_ph:"صف أسلوبك في الوضعية...",
+  dose_ph:"اسأل عن عوامل التعريض...",
+  welcome:"مرحباً في Atlas Mentor! اسألني أي شيء عن وضعيات التصوير الشعاعي أو التشريح أو فيزياء الأشعة أو رعاية المريض.",
+  chips:["مبدأ ALARA","kVp والتباين","صدر PA","mAs والكثافة","تفاعلات الفوتون","CT مقابل MRI","التشريح الشعاعي","جرعة المريض"],
+  chip_qs:["اشرح مبدأ ALARA","كيف يؤثر kVp على تباين الصورة؟","خطوات وضعية صدر PA","كيف يؤثر mAs على كثافة الصورة؟","اشرح التأثير الكهروضوئي وتشتت كومبتون","ما الفروق بين CT وMRI والأشعة التقليدية؟","كيف تحدد الأعضاء في صورة الصدر؟","كيف تقلل جرعة الإشعاع للمريض؟"],
+  low_dose:"آمن",mod_dose:"مقبول",high_dose:"قلل العوامل",
+  contrast:"التباين",density:"الكثافة",est_dose:"الجرعة",
+  high:"عالٍ",medium:"متوسط",low:"منخفض",under:"ناقص",optimal:"مثالي",over:"زائد",
+  ok_pfx:"صحيح! ",err_pfx:"ليس تماماً. ",hint_pfx:"تلميح: ",
+  gen_patient:"جارٍ توليد حالة مريض...",gen_case:"جارٍ توليد حالة أشعة...",
+  streak_new:"🔥 يوم {n} متتالي!",streak_body:"درست {n} يوم/أيام متتالية. استمر!",
+  streak_lost:"انقطعت السلسلة",streak_lost_body:"انقطعت سلسلتك. ابدأ سلسلة جديدة اليوم!",
+  streak_btn:"تابع التعلم",streak_first:"مرحباً بعودتك!",streak_first_body:"رحلتك التعليمية تبدأ اليوم.",
+  you:"أنت",
+  sys:`أنت Atlas Mentor، معلم ذكاء اصطناعي خبير لطلاب تقنيات الأشعة. أجب باللغة العربية دائماً. متخصص في وضعيات التصوير الشعاعي والتشريح وفيزياء الأشعة والوقاية من الإشعاع (ALARA) والتصوير المقطعي والرنين المغناطيسي والطب النووي ورعاية المريض. كن موجزاً وتعليمياً ومشجعاً. اجعل ردودك أقل من 150 كلمة إلا عند الضرورة.`
+}};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let lang='en';
+let chatH=[],patH=[],doseH=[];
+let stats={q:0,dr:0,dt:0,p:0};
+let caseAnswered=false;
+let currentCase=null, currentPatient=null;
+
+// ═══════════════════════════════════════════════════════
+// STREAK — real daily tracking via localStorage
+// ═══════════════════════════════════════════════════════
+function getTodayStr(){
+  return new Date().toISOString().slice(0,10); // YYYY-MM-DD
+}
+function loadStreak(){
+  const today=getTodayStr();
+  const s=JSON.parse(localStorage.getItem('am_streak')||'{}');
+  // s = { count, lastDate }
+  if(!s.lastDate){
+    // First ever visit
+    const ns={count:1,lastDate:today};
+    localStorage.setItem('am_streak',JSON.stringify(ns));
+    return{count:1,isNew:true,isFirst:true,wasLost:false};
+  }
+  if(s.lastDate===today){
+    // Already logged today
+    return{count:s.count,isNew:false,isFirst:false,wasLost:false};
+  }
+  // Check if yesterday
+  const last=new Date(s.lastDate);
+  const now=new Date(today);
+  const diff=(now-last)/(1000*60*60*24);
+  if(diff===1){
+    // Consecutive day
+    const ns={count:s.count+1,lastDate:today};
+    localStorage.setItem('am_streak',JSON.stringify(ns));
+    return{count:ns.count,isNew:true,isFirst:false,wasLost:false};
+  } else {
+    // Gap — reset
+    const ns={count:1,lastDate:today};
+    localStorage.setItem('am_streak',JSON.stringify(ns));
+    return{count:1,isNew:true,isFirst:false,wasLost:true};
+  }
+}
+function getStreakCount(){
+  const s=JSON.parse(localStorage.getItem('am_streak')||'{}');
+  return s.count||0;
+}
+function showStreakModal(info){
+  const t=T[lang];
+  const modal=document.getElementById('streakModal');
+  const n=info.count;
+  if(info.isFirst){
+    document.getElementById('smTitle').textContent=t.streak_first;
+    document.getElementById('smBody').textContent=t.streak_first_body;
+  } else if(info.wasLost){
+    document.getElementById('smTitle').textContent=t.streak_lost;
+    document.getElementById('smBody').textContent=t.streak_lost_body;
+  } else {
+    document.getElementById('smTitle').textContent=t.streak_new.replace('{n}',n);
+    document.getElementById('smBody').textContent=t.streak_body.replace('{n}',n);
+  }
+  document.getElementById('smBtn').textContent=t.streak_btn;
+  modal.style.display='flex';
+}
+function updateStreakUI(){
+  const c=getStreakCount();
+  document.getElementById('streakTxt').textContent=c;
+  document.getElementById('stStreak').textContent=c;
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS (localStorage)
+// ═══════════════════════════════════════════════════════
+function saveStats(){localStorage.setItem('am_stats',JSON.stringify(stats));}
+function loadSavedStats(){
+  const s=JSON.parse(localStorage.getItem('am_stats')||'null');
+  if(s)stats=s;
+}
+
+// ═══════════════════════════════════════════════════════
+// API CALL — via Netlify proxy
+// ═══════════════════════════════════════════════════════
+async function callAPI(messages, systemPrompt){
+  try{
+    const r=await fetch('/api/claude-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages, system: systemPrompt||T[lang].sys})
+    });
+    const d=await r.json();
+    if(d.error) return(lang==='ar'?'خطأ: ':'Error: ')+d.error.message;
+    return d.content?.map(c=>c.text||'').join('')||'No response.';
+  }catch(e){
+    return lang==='ar'?'خطأ في الاتصال بالخادم.':'Server connection error.';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// MSG HELPERS
+// ═══════════════════════════════════════════════════════
+function addMsg(cid,role,text){
+  const c=document.getElementById(cid);
+  const d=document.createElement('div');d.className='msg'+(role==='user'?' u':'');
+  const av=document.createElement('div');av.className='av '+(role==='user'?'uav':'bav');
+  av.textContent=role==='user'?T[lang].you:'AM';
+  const b=document.createElement('div');b.className='bub';b.textContent=text;
+  d.appendChild(av);d.appendChild(b);c.appendChild(d);c.scrollTop=c.scrollHeight;return b;
+}
+function addLoader(id){
+  const c=document.getElementById(id);const d=document.createElement('div');d.className='msg';d.id='ld-'+id;
+  const av=document.createElement('div');av.className='av bav';av.textContent='AM';
+  const b=document.createElement('div');b.className='bub';b.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  d.appendChild(av);d.appendChild(b);c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function rmLoader(id){const e=document.getElementById('ld-'+id);if(e)e.remove();}
+function addMsgS(id,role,text){
+  const c=document.getElementById(id);const d=document.createElement('div');d.className='msg'+(role==='user'?' u':'');
+  const av=document.createElement('div');av.className='av '+(role==='user'?'uav':'bav');av.textContent=role==='user'?T[lang].you:'AM';
+  const b=document.createElement('div');b.className='bub';b.textContent=text;d.appendChild(av);d.appendChild(b);c.appendChild(d);
+}
+
+// ═══════════════════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════════════════
+async function sendChat(){
+  const inp=document.getElementById('chatIn');const t=inp.value.trim();if(!t)return;inp.value='';
+  addMsg('chatMsgs','user',t);chatH.push({role:'user',content:t});addLoader('chatMsgs');
+  stats.q++;saveStats();updateStats();
+  const rep=await callAPI(chatH,T[lang].sys);
+  rmLoader('chatMsgs');addMsg('chatMsgs','bot',rep);chatH.push({role:'assistant',content:rep});
+}
+function askQ(q){document.getElementById('chatIn').value=q;sendChat();}
+function buildChips(){
+  const t=T[lang];const row=document.getElementById('chipsRow');row.innerHTML='';
+  t.chips.forEach((c,i)=>{
+    const el=document.createElement('div');el.className='chip';el.textContent=c;
+    el.onclick=()=>askQ(t.chip_qs[i]);row.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// VIRTUAL PATIENT — AI generated, infinite
+// ═══════════════════════════════════════════════════════
+async function genPatient(){
+  const btn=document.getElementById('nextPatBtn');
+  btn.disabled=true;
+  document.getElementById('pMsgs').innerHTML='';
+  patH=[];
+
+  // Show loading in card
+  document.getElementById('pExam').textContent='—';
+  document.getElementById('pCond').textContent='—';
+  document.getElementById('pGrid').innerHTML=`<div style="grid-column:1/-1;"><div class="gen-loading"><svg viewBox="0 0 24 24"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg><span>${T[lang].gen_patient}</span></div></div>`;
+  document.getElementById('pChallenge').textContent='';
+
+  const isAr=lang==='ar';
+  const sys=`You are a medical case generator for radiology students. Generate ONE unique patient case as a JSON object only, no markdown. Use this exact structure:
+{"exam":"${isAr?'Arabic exam name':'exam name in English'}","age":"number","sex":"${isAr?'ذكر or أنثى':'Male or Female'}","weight":"e.g. 65 kg","condition":"${isAr?'Arabic condition description':'condition in English'}","challenge":"${isAr?'Arabic challenge question':'challenge question in English'}","keyword":"key technique word the student must mention"}
+Make it clinically realistic and educational. Vary body parts, patient ages, and clinical conditions each time. Respond with ONLY the JSON, nothing else.`;
+
+  const rep=await callAPI([{role:'user',content:'Generate a new patient case now'}],sys);
+  btn.disabled=false;
+
+  try{
+    const clean=rep.replace(/```json|```/g,'').trim();
+    const p=JSON.parse(clean);
+    currentPatient=p;
+    stats.p++;saveStats();updateStats();
+
+    document.getElementById('pExam').textContent=p.exam||'—';
+    document.getElementById('pCond').textContent=p.condition||'—';
+    const ageLbl=isAr?'العمر':'Age';
+    const sexLbl=isAr?'الجنس':'Sex';
+    const wtLbl=isAr?'الوزن':'Weight';
+    const exLbl=isAr?'الفحص':'Exam';
+    document.getElementById('pGrid').innerHTML=
+      `<div class="ic"><div class="il">${ageLbl}</div><div class="iv">${p.age||'—'}</div></div>
+       <div class="ic"><div class="il">${sexLbl}</div><div class="iv">${p.sex||'—'}</div></div>
+       <div class="ic"><div class="il">${wtLbl}</div><div class="iv">${p.weight||'—'}</div></div>
+       <div class="ic"><div class="il">${exLbl}</div><div class="iv">${p.exam||'—'}</div></div>`;
+    document.getElementById('pChallenge').textContent=p.challenge||'';
+    addMsgS('pMsgs','bot',(isAr?'حالة جديدة: ':'New case: ')+p.exam+' — '+p.challenge);
+  }catch(e){
+    document.getElementById('pGrid').innerHTML='';
+    addMsgS('pMsgs','bot',lang==='ar'?'خطأ في توليد الحالة. حاول مجدداً.':'Error generating case. Please try again.');
+  }
+}
+
+async function sendPatient(){
+  if(!currentPatient)return;
+  const inp=document.getElementById('patIn');const t=inp.value.trim();if(!t)return;inp.value='';
+  addMsgS('pMsgs','user',t);patH.push({role:'user',content:t});
+  const c=document.getElementById('pMsgs');
+  const ld=document.createElement('div');ld.id='pld';ld.className='msg';
+  const a2=document.createElement('div');a2.className='av bav';a2.textContent='AM';
+  const b2=document.createElement('div');b2.className='bub';b2.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  ld.appendChild(a2);ld.appendChild(b2);c.appendChild(ld);
+  const p=currentPatient;
+  const sys=`${T[lang].sys} You are evaluating a student's positioning approach for: ${p.exam}, patient age ${p.age}, condition: ${p.condition}. Challenge: ${p.challenge}. Check if they mentioned "${p.keyword}". Give specific, constructive feedback.`;
+  const rep=await callAPI(patH,sys);
+  document.getElementById('pld')?.remove();
+  addMsgS('pMsgs','bot',rep);patH.push({role:'assistant',content:rep});
+  stats.q++;saveStats();updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+// DETECTIVE — AI generated cases with realistic SVG X-rays
+// ═══════════════════════════════════════════════════════
+
+// Realistic SVG X-ray drawing functions
+const xrayDrawers={
+  chest_rotation:(svg,severity)=>{
+    const s=severity||'moderate';
+    const off=s==='severe'?22:s==='moderate'?12:5;
+    svg.innerHTML=`
+      <rect width="320" height="220" fill="#080808"/>
+      <ellipse cx="160" cy="110" rx="115" ry="88" fill="#111" stroke="#1a1a1a" stroke-width="1"/>
+      <!-- ribs left -->
+      <path d="M60,55 Q95,48 130,58" fill="none" stroke="#3a3a3a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M55,72 Q92,62 132,72" fill="none" stroke="#3a3a3a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M52,90 Q90,78 133,88" fill="none" stroke="#383838" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M52,108 Q90,96 134,106" fill="none" stroke="#363636" stroke-width="2" stroke-linecap="round"/>
+      <path d="M55,125 Q91,114 134,124" fill="none" stroke="#343434" stroke-width="2" stroke-linecap="round"/>
+      <path d="M60,142 Q94,132 134,141" fill="none" stroke="#323232" stroke-width="2" stroke-linecap="round"/>
+      <!-- ribs right -->
+      <path d="M190,58 Q225,48 260,55" fill="none" stroke="#3a3a3a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M188,72 Q228,62 265,72" fill="none" stroke="#3a3a3a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M187,88 Q230,78 268,90" fill="none" stroke="#383838" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M186,106 Q230,96 268,108" fill="none" stroke="#363636" stroke-width="2" stroke-linecap="round"/>
+      <path d="M186,124 Q229,114 265,125" fill="none" stroke="#343434" stroke-width="2" stroke-linecap="round"/>
+      <path d="M186,141 Q226,132 260,142" fill="none" stroke="#323232" stroke-width="2" stroke-linecap="round"/>
+      <!-- lung fields -->
+      <ellipse cx="102" cy="105" rx="48" ry="58" fill="#0f0f0f" opacity="0.6"/>
+      <ellipse cx="218" cy="107" rx="44" ry="55" fill="#0f0f0f" opacity="0.6"/>
+      <!-- mediastinum / spine — ROTATED (off-center) -->
+      <rect x="${152+off}" y="30" width="14" height="155" rx="3" fill="#888" opacity="0.55"/>
+      <!-- carina -->
+      <path d="M${155+off},82 L${148+off},95 M${163+off},82 L${170+off},95" fill="none" stroke="#666" stroke-width="2"/>
+      <!-- heart -->
+      <ellipse cx="${135+off/2}" cy="120" rx="38" ry="34" fill="#1a1a1a" stroke="#2a2a2a" stroke-width="1"/>
+      <!-- aortic knob -->
+      <ellipse cx="${148+off}" cy="72" rx="12" ry="9" fill="#222" stroke="#333" stroke-width="1"/>
+      <!-- diaphragm -->
+      <path d="M55,165 Q105,155 160,162 Q210,155 265,165" fill="none" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- label -->
+      <text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">ROTATION ${s.toUpperCase()}</text>
+      <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">spinous process ${off>15?'markedly':'moderately'} off-center</text>`;
+  },
+  chest_overexposure:(svg)=>{
+    svg.innerHTML=`
+      <rect width="320" height="220" fill="#080808"/>
+      <ellipse cx="160" cy="110" rx="115" ry="88" fill="#181818" stroke="#222" stroke-width="1"/>
+      <!-- ribs barely visible -->
+      <path d="M60,55 Q95,48 130,58" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      <path d="M55,72 Q92,62 132,72" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      <path d="M52,90 Q90,78 133,88" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      <path d="M190,58 Q225,48 260,55" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      <path d="M188,72 Q228,62 265,72" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      <path d="M187,88 Q230,78 268,90" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      <!-- lung fields — washed out -->
+      <ellipse cx="102" cy="105" rx="52" ry="60" fill="#555" opacity="0.35"/>
+      <ellipse cx="218" cy="107" rx="48" ry="57" fill="#555" opacity="0.35"/>
+      <!-- mediastinum -->
+      <rect x="152" y="30" width="14" height="155" rx="3" fill="#ccc" opacity="0.5"/>
+      <!-- heart — barely visible -->
+      <ellipse cx="135" cy="120" rx="38" ry="34" fill="#333" opacity="0.4"/>
+      <!-- diaphragm -->
+      <path d="M55,165 Q105,155 160,162 Q210,155 265,165" fill="none" stroke="#777" stroke-width="2" opacity="0.5"/>
+      <!-- burned out lung parenchyma -->
+      <ellipse cx="102" cy="100" rx="30" ry="35" fill="#777" opacity="0.25"/>
+      <ellipse cx="218" cy="102" rx="28" ry="33" fill="#777" opacity="0.25"/>
+      <text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">OVEREXPOSURE</text>
+      <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">lung detail lost — reduce mAs / kVp</text>`;
+  },
+  chest_underexposure:(svg)=>{
+    svg.innerHTML=`
+      <rect width="320" height="220" fill="#080808"/>
+      <ellipse cx="160" cy="110" rx="115" ry="88" fill="#060606" stroke="#111" stroke-width="1"/>
+      <!-- ribs very bright / white -->
+      <path d="M60,55 Q95,48 130,58" fill="none" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>
+      <path d="M55,72 Q92,62 132,72" fill="none" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>
+      <path d="M52,90 Q90,78 133,88" fill="none" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+      <path d="M52,108 Q90,96 134,106" fill="none" stroke="#bbb" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M55,125 Q91,114 134,124" fill="none" stroke="#aaa" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M190,58 Q225,48 260,55" fill="none" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>
+      <path d="M188,72 Q228,62 265,72" fill="none" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>
+      <path d="M187,88 Q230,78 268,90" fill="none" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+      <!-- lung fields — too dark, no lung markings visible -->
+      <ellipse cx="102" cy="105" rx="52" ry="60" fill="#020202"/>
+      <ellipse cx="218" cy="107" rx="48" ry="57" fill="#020202"/>
+      <!-- mediastinum -->
+      <rect x="152" y="30" width="14" height="155" rx="3" fill="#bbb" opacity="0.7"/>
+      <!-- heart -->
+      <ellipse cx="135" cy="120" rx="38" ry="34" fill="#0a0a0a" stroke="#333" stroke-width="1.5"/>
+      <!-- diaphragm -->
+      <path d="M55,165 Q105,155 160,162 Q210,155 265,165" fill="none" stroke="#888" stroke-width="2.5"/>
+      <text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">UNDEREXPOSURE</text>
+      <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">lung vessels not visible — increase mAs</text>`;
+  },
+  hand_positioning:(svg)=>{
+    svg.innerHTML=`
+      <rect width="320" height="220" fill="#080808"/>
+      <!-- metacarpals -->
+      <rect x="110" y="140" width="14" height="55" rx="4" fill="#bbb" stroke="#888" stroke-width="0.5"/>
+      <rect x="130" y="135" width="14" height="62" rx="4" fill="#c5c5c5" stroke="#888" stroke-width="0.5"/>
+      <rect x="150" y="133" width="14" height="64" rx="4" fill="#c0c0c0" stroke="#888" stroke-width="0.5"/>
+      <rect x="170" y="137" width="13" height="60" rx="4" fill="#bababa" stroke="#888" stroke-width="0.5"/>
+      <rect x="188" y="145" width="12" height="48" rx="4" fill="#b5b5b5" stroke="#888" stroke-width="0.5"/>
+      <!-- proximal phalanges -->
+      <rect x="111" y="105" width="13" height="32" rx="3" fill="#c8c8c8" stroke="#888" stroke-width="0.5"/>
+      <rect x="131" y="99" width="13" height="34" rx="3" fill="#d0d0d0" stroke="#888" stroke-width="0.5"/>
+      <rect x="151" y="97" width="13" height="34" rx="3" fill="#cccccc" stroke="#888" stroke-width="0.5"/>
+      <rect x="171" y="101" width="12" height="33" rx="3" fill="#c5c5c5" stroke="#888" stroke-width="0.5"/>
+      <rect x="189" y="110" width="11" height="32" rx="3" fill="#c0c0c0" stroke="#888" stroke-width="0.5"/>
+      <!-- middle phalanges (no thumb) -->
+      <rect x="131" y="73" width="13" height="23" rx="3" fill="#d2d2d2" stroke="#888" stroke-width="0.5"/>
+      <rect x="151" y="71" width="13" height="23" rx="3" fill="#cecece" stroke="#888" stroke-width="0.5"/>
+      <rect x="171" y="75" width="12" height="22" rx="3" fill="#c8c8c8" stroke="#888" stroke-width="0.5"/>
+      <rect x="189" y="80" width="11" height="22" rx="3" fill="#c3c3c3" stroke="#888" stroke-width="0.5"/>
+      <!-- distal phalanges -->
+      <ellipse cx="117" cy="94" rx="7" ry="9" fill="#ccc" stroke="#888" stroke-width="0.5"/>
+      <ellipse cx="137" cy="63" rx="7" ry="9" fill="#d4d4d4" stroke="#888" stroke-width="0.5"/>
+      <ellipse cx="157" cy="61" rx="7" ry="9" fill="#d0d0d0" stroke="#888" stroke-width="0.5"/>
+      <ellipse cx="177" cy="65" rx="6" ry="8" fill="#cacaca" stroke="#888" stroke-width="0.5"/>
+      <ellipse cx="194" cy="72" rx="6" ry="8" fill="#c5c5c5" stroke="#888" stroke-width="0.5"/>
+      <!-- carpals -->
+      <ellipse cx="118" cy="162" rx="9" ry="7" fill="#aaa" stroke="#777" stroke-width="0.5"/>
+      <ellipse cx="136" cy="160" rx="9" ry="7" fill="#b0b0b0" stroke="#777" stroke-width="0.5"/>
+      <ellipse cx="154" cy="159" rx="9" ry="7" fill="#ababab" stroke="#777" stroke-width="0.5"/>
+      <ellipse cx="172" cy="161" rx="8" ry="7" fill="#a8a8a8" stroke="#777" stroke-width="0.5"/>
+      <ellipse cx="188" cy="163" rx="7" ry="6" fill="#a5a5a5" stroke="#777" stroke-width="0.5"/>
+      <!-- OBLIQUE tilt indicator — finger not flat -->
+      <line x1="100" y1="60" x2="100" y2="200" stroke="#c00" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">POSITIONING ERROR</text>
+      <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">fingers not flat — oblique, not true AP</text>`;
+  },
+  knee_lateral:(svg,condyles_separated)=>{
+    const off=condyles_separated?14:0;
+    svg.innerHTML=`
+      <rect width="320" height="220" fill="#080808"/>
+      <!-- femur shaft -->
+      <rect x="142" y="10" width="36" height="100" rx="6" fill="#aaa" stroke="#777" stroke-width="0.5"/>
+      <!-- femoral condyles — separated if error -->
+      <ellipse cx="${148}" cy="118" rx="20" ry="16" fill="#b8b8b8" stroke="#888" stroke-width="0.5"/>
+      <ellipse cx="${162+off}" cy="122" rx="20" ry="16" fill="#b0b0b0" stroke="#888" stroke-width="0.5"/>
+      <!-- tibial plateau -->
+      <rect x="130" y="134" width="60" height="10" rx="3" fill="#c0c0c0" stroke="#888" stroke-width="0.5"/>
+      <!-- tibia -->
+      <rect x="138" y="143" width="30" height="72" rx="5" fill="#aaa" stroke="#777" stroke-width="0.5"/>
+      <!-- fibula -->
+      <rect x="174" y="145" width="12" height="68" rx="4" fill="#999" stroke="#666" stroke-width="0.5"/>
+      <!-- patella -->
+      <ellipse cx="128" cy="105" rx="16" ry="18" fill="#b5b5b5" stroke="#888" stroke-width="0.5"/>
+      <!-- soft tissue outline -->
+      <ellipse cx="155" cy="110" rx="75" ry="82" fill="none" stroke="#222" stroke-width="1"/>
+      ${off>0?`<text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">ROTATION ERROR</text><text x="8" y="215" fill="#444" font-size="7" font-family="monospace">condyles separated — not true lateral</text>`:`<text x="8" y="15" fill="#0c0" font-size="9" font-family="monospace" font-weight="bold">TRUE LATERAL</text><text x="8" y="215" fill="#444" font-size="7" font-family="monospace">condyles superimposed correctly</text>`}`;
+  },
+  spine_lateral:(svg,error)=>{
+    svg.innerHTML=`
+      <rect width="320" height="220" fill="#080808"/>
+      <!-- vertebrae -->
+      ${[20,48,76,104,132,160].map((y,i)=>`
+        <rect x="130" y="${y}" width="52" height="22" rx="3" fill="#b8b8b8" stroke="#888" stroke-width="0.5"/>
+        <rect x="178" y="${y+3}" width="22" height="16" rx="2" fill="#999" stroke="#777" stroke-width="0.5"/>
+        <rect x="108" y="${y+3}" width="22" height="16" rx="2" fill="#999" stroke="#777" stroke-width="0.5"/>
+      `).join('')}
+      <!-- discs -->
+      ${[42,70,98,126,154].map(y=>`<rect x="132" y="${y}" width="48" height="6" rx="1" fill="#444" stroke="#333" stroke-width="0.3"/>`).join('')}
+      <!-- soft tissue -->
+      <rect x="95" y="15" width="130" height="185" rx="8" fill="none" stroke="#1a1a1a" stroke-width="1"/>
+      ${error==='motion'?`
+        <!-- motion blur lines -->
+        <rect x="128" y="18" width="56" height="24" rx="3" fill="none" stroke="#888" stroke-width="0.5" opacity="0.5" transform="translate(3,2)"/>
+        <rect x="128" y="46" width="56" height="24" rx="3" fill="none" stroke="#888" stroke-width="0.5" opacity="0.5" transform="translate(-2,1)"/>
+        <text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">MOTION ARTIFACT</text>
+        <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">patient moved — double edges on vertebrae</text>
+      `:error==='collimation'?`
+        <!-- collimation error — cut off -->
+        <rect x="0" y="0" width="110" height="220" fill="#000" opacity="0.85"/>
+        <line x1="110" y1="0" x2="110" y2="220" stroke="#c00" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="8" y="15" fill="#c00" font-size="9" font-family="monospace" font-weight="bold">COLLIMATION ERROR</text>
+        <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">anatomy clipped — widen field</text>
+      `:`
+        <text x="8" y="15" fill="#0a0" font-size="9" font-family="monospace" font-weight="bold">REFERENCE IMAGE</text>
+        <text x="8" y="215" fill="#444" font-size="7" font-family="monospace">lateral lumbar spine</text>
+      `}`;
+  }
+};
+
+// Map AI case types to SVG drawers
+function renderXraySVG(caseData){
+  const svg=document.getElementById('xraySvg');
+  const type=caseData.svg_type||'chest_rotation';
+  const param=caseData.svg_param||null;
+  if(xrayDrawers[type]) xrayDrawers[type](svg,param);
+  else xrayDrawers.chest_rotation(svg,'moderate');
+}
+
+async function genCase(){
+  const btn=document.getElementById('nextCaseBtn');
+  btn.disabled=true;
+  caseAnswered=false;
+  document.getElementById('dChoices').innerHTML='';
+  document.getElementById('dResult').innerHTML='';
+  document.getElementById('dTitle').textContent='—';
+  document.getElementById('dHint').textContent='';
+
+  // Show loading spinner in xray area
+  const svg=document.getElementById('xraySvg');
+  svg.innerHTML=`<rect width="320" height="220" fill="#080808"/><text x="160" y="105" fill="#444" font-size="11" font-family="monospace" text-anchor="middle">${T[lang].gen_case}</text><text x="160" y="125" fill="#333" font-size="9" font-family="monospace" text-anchor="middle">generating...</text>`;
+
+  const isAr=lang==='ar';
+  const svgTypes=Object.keys(xrayDrawers);
+  const chosenType=svgTypes[Math.floor(Math.random()*svgTypes.length)];
+
+  const sys=`You are a radiology education case generator. Generate ONE X-ray case as JSON only, no markdown. Structure:
+{"title":"${isAr?'Arabic title':'case title in English'}","hint":"${isAr?'Arabic hint':'diagnostic hint'}","correct_index":0,"choices":["${isAr?'4 choices in Arabic':'choice1'}","choice2","choice3","choice4"],"explanation":"${isAr?'Arabic explanation':'detailed explanation of the error and how to fix it'}","svg_type":"${chosenType}","svg_param":"${chosenType.includes('rotation')?'moderate':chosenType.includes('knee')? 'true':'null'}"}
+The correct_index should be 0,1,2, or 3. Make it educational and clinically realistic. svg_param for chest_rotation: mild/moderate/severe; for knee_lateral: true (separated) or false; for spine_lateral: motion or collimation or null. Respond ONLY with the JSON.`;
+
+  const rep=await callAPI([{role:'user',content:'Generate a new X-ray case now'}],sys);
+  btn.disabled=false;
+
+  try{
+    const clean=rep.replace(/```json|```/g,'').trim();
+    const c=JSON.parse(clean);
+    currentCase=c;
+
+    document.getElementById('dTitle').textContent=c.title||'—';
+    document.getElementById('dHint').textContent=(T[lang].hint_pfx)+(c.hint||'');
+    renderXraySVG(c);
+
+    const grid=document.getElementById('dChoices');
+    grid.innerHTML='';
+    (c.choices||[]).forEach((ch,i)=>{
+      const b=document.createElement('button');b.className='cb';b.textContent=ch;
+      b.onclick=()=>checkAnswer(i,b,c);grid.appendChild(b);
+    });
+  }catch(e){
+    document.getElementById('dTitle').textContent=lang==='ar'?'خطأ في التوليد':'Generation error';
+    xrayDrawers.chest_rotation(document.getElementById('xraySvg'),'moderate');
+  }
+}
+
+function checkAnswer(idx,btn,c){
+  if(caseAnswered)return;
+  caseAnswered=true;stats.dt++;
+  const btns=document.querySelectorAll('.cb');
+  const ci=parseInt(c.correct_index)||0;
+  btns[ci].classList.add('ok');
+  const res=document.getElementById('dResult');
+  if(idx===ci){
+    stats.dr++;document.getElementById('scoreNum').textContent=stats.dr;
+    res.innerHTML=`<div class="rbox rok">${T[lang].ok_pfx}${c.explanation||''}</div>`;
+  }else{
+    btn.classList.add('err');
+    res.innerHTML=`<div class="rbox rerr">${T[lang].err_pfx}${c.explanation||''}</div>`;
+  }
+  document.getElementById('totalNum').textContent=stats.dt;
+  saveStats();updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+// DOSE
+// ═══════════════════════════════════════════════════════
+function calcDose(){
+  const kv=parseInt(document.getElementById('kvp').value);
+  const ma=parseInt(document.getElementById('mas').value);
+  document.getElementById('kvpV').textContent=kv;
+  document.getElementById('masV').textContent=ma;
+  const dose=Math.round(ma*0.8*Math.pow(kv/80,2.5));
+  const t=T[lang];
+  const contrast=kv<70?t.high:kv<90?t.medium:t.low;
+  const density=ma<10?t.under:ma<40?t.optimal:t.over;
+  const lvl=dose<30?t.low:dose<80?t.medium:t.high;
+  const col=dose<30?'#1D9E75':dose<80?'#BA7517':'#E24B4A';
+  const note=dose<30?t.low_dose:dose<80?t.mod_dose:t.high_dose;
+  document.getElementById('doseMetrics').innerHTML=
+    `<div class="dm"><div class="dml">${t.contrast}</div><div class="dmv">${contrast}</div></div>
+     <div class="dm"><div class="dml">${t.density}</div><div class="dmv">${density}</div></div>
+     <div class="dm"><div class="dml">${t.est_dose}</div><div class="dmv">${dose} μGy</div></div>`;
+  document.getElementById('doseBar').style.width=Math.min(100,Math.round(dose/2))+'%';
+  document.getElementById('doseBar').style.background=col;
+  document.getElementById('doseTxt').textContent=lvl+' — '+note;
+}
+async function sendDose(){
+  const inp=document.getElementById('doseIn');const t=inp.value.trim();if(!t)return;inp.value='';
+  const kv=document.getElementById('kvp').value;const ma=document.getElementById('mas').value;
+  addMsgS('doseMsgs','user',t);doseH.push({role:'user',content:t});
+  const c=document.getElementById('doseMsgs');const ld=document.createElement('div');ld.id='dld';ld.className='msg';
+  const a2=document.createElement('div');a2.className='av bav';a2.textContent='AM';
+  const b2=document.createElement('div');b2.className='bub';b2.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  ld.appendChild(a2);ld.appendChild(b2);c.appendChild(ld);
+  const sys=`${T[lang].sys} Student selected kVp=${kv} and mAs=${ma}. Answer in context.`;
+  const rep=await callAPI(doseH,sys);
+  document.getElementById('dld')?.remove();
+  addMsgS('doseMsgs','bot',rep);doseH.push({role:'assistant',content:rep});
+  stats.q++;saveStats();updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════════════════════
+function updateStats(){
+  document.getElementById('stQ').textContent=stats.q;
+  document.getElementById('stP').textContent=stats.p;
+  document.getElementById('stAcc').textContent=stats.dt>0?Math.round(stats.dr/stats.dt*100)+'%':'—';
+  const t=T[lang];
+  const mods=[
+    {n:t.nav_chat,v:Math.min(100,stats.q*8)},
+    {n:t.nav_patient,v:Math.min(100,stats.p*20)},
+    {n:t.nav_detective,v:stats.dt>0?Math.round(stats.dr/stats.dt*100):0},
+    {n:t.nav_dose,v:doseH.length>0?Math.min(100,doseH.length*15):0}
+  ];
+  document.getElementById('progBars').innerHTML=mods.map(m=>
+    `<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--tx);">${m.n}</span><span style="color:var(--tx2);">${m.v}%</span></div><div class="btrack"><div class="bfill" style="width:${m.v}%;background:var(--brand);"></div></div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// LANGUAGE
+// ═══════════════════════════════════════════════════════
+function setLang(l){
+  lang=l;
+  document.documentElement.lang=l;
+  document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  document.getElementById('btnEN').classList.toggle('on',l==='en');
+  document.getElementById('btnAR').classList.toggle('on',l==='ar');
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k');if(T[l][k])el.textContent=T[l][k];
+  });
+  document.querySelectorAll('[data-kp]').forEach(el=>{
+    const k=el.getAttribute('data-kp');if(T[l][k])el.placeholder=T[l][k];
+  });
+  document.getElementById('brandSub').textContent=T[l].brand_sub;
+  document.getElementById('ns1').textContent=T[l].learn;
+  document.getElementById('ns2').textContent=T[l].progress;
+  const ibTitle=document.getElementById('ibTitle');
+  const ibSub=document.getElementById('ibSub');
+  const installBtn=document.getElementById('installBtn');
+  if(ibTitle)ibTitle.textContent=l==='ar'?'تثبيت Atlas Mentor':'Install Atlas Mentor';
+  if(ibSub)ibSub.textContent=l==='ar'?'أضف للشاشة الرئيسية':'Add to home screen';
+  if(installBtn)installBtn.textContent=l==='ar'?'تثبيت':'Install';
+  buildChips();
+  calcDose();
+  updateStats();
+  updateStreakUI();
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function goTab(name,el){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+name).classList.add('on');
+  if(el)el.classList.add('on');
+  syncMob(name);
+}
+function goTabM(name,el){
+  document.querySelectorAll('.mn').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+name).classList.add('on');
+  el.classList.add('on');
+  const side=document.querySelector(`.ni[onclick*="'${name}'"]`);
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(side)side.classList.add('on');
+}
+function syncMob(name){
+  document.querySelectorAll('.mn').forEach(n=>{
+    n.classList.toggle('on',n.getAttribute('onclick')?.includes("'"+name+"'"));
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════════════════════
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  const b=document.getElementById('installBanner');if(b)b.style.display='flex';
+});
+document.getElementById('installBtn')?.addEventListener('click',async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  const{outcome}=await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  document.getElementById('installBanner').style.display='none';
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('installBanner').style.display='none';
+  deferredPrompt=null;
+});
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  loadSavedStats();
+  setLang('en');
+  buildChips();
+  calcDose();
+  updateStats();
+
+  // Streak check
+  const streakInfo=loadStreak();
+  updateStreakUI();
+  if(streakInfo.isNew){
+    setTimeout(()=>showStreakModal(streakInfo),2000);
+  }
+
+  // Welcome message
+  addMsg('chatMsgs','bot',T[lang].welcome);
+
+  // Splash hide after 2s
+  setTimeout(()=>{
+    const s=document.getElementById('splash');
+    s.style.opacity='0';
+    setTimeout(()=>s.style.display='none',400);
+  },2000);
+
+  // Pre-gen first patient & detective case
+  setTimeout(()=>{genPatient();genCase();},2200);
+});
+</script>
+</body>
+</html>

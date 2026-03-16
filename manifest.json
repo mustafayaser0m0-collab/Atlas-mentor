@@ -1,0 +1,48 @@
+{
+  "name": "Atlas Mentor",
+  "short_name": "Atlas Mentor",
+  "description": "AI tutor for radiologic technology students",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#1D9E75",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["education", "medical"],
+  "shortcuts": [
+    {
+      "name": "AI Tutor Chat",
+      "short_name": "Chat",
+      "url": "/index.html#chat",
+      "description": "Ask the AI tutor a question"
+    },
+    {
+      "name": "X-Ray Detective",
+      "short_name": "Detective",
+      "url": "/index.html#detective",
+      "description": "Identify errors in X-ray images"
+    }
+  ]
+}
