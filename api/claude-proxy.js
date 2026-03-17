@@ -6,21 +6,23 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const { messages, system } = req.body;
-    const contents = [];
-    if (system) {
-      contents.push({ role: 'user', parts: [{ text: system }] });
-      contents.push({ role: 'model', parts: [{ text: 'OK' }] });
-    }
-    for (const m of messages) {
-      contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
-    }
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + process.env.GEMINI_API_KEY, {
+    const r = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        max_tokens: 1000,
+        messages: [
+          { role: 'system', content: system || 'You are a helpful assistant.' },
+          ...messages
+        ]
+      })
     });
     const d = await r.json();
-    const text = d?.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(d?.error || 'no response');
+    const text = d?.choices?.[0]?.message?.content || JSON.stringify(d?.error || 'no response');
     return res.status(200).json({ content: [{ type: 'text', text }] });
   } catch (e) {
     return res.status(200).json({ content: [{ type: 'text', text: 'Error: ' + e.message }] });
