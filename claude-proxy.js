@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     for (const m of messages) {
       contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
     }
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY, {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + process.env.GEMINI_API_KEY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents })
